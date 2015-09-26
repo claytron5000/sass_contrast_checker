@@ -1,0 +1,45 @@
+/* W3C Contrast Checker
+ * http://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef
+ * you'll need sassy-math
+ * Clayton Salem */
+
+// see http://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef
+@function rgbinput($value) {
+  $value: $value/255; 
+  $value1: $value/12.92;
+  $value2: power(($value+0.055)/1.055, 2.4);
+  $valueout: if($value <= 0.03928, $value1, $value2);
+  @return $valueout;
+}
+
+
+// my luminance function, does this already exsist in Sass?
+@function luminance($color) {
+  $red: rgbinput(red($color));
+  //@debug $red;
+  $green: rgbinput(green($color));
+  $blue: rgbinput(blue($color));
+  @return (0.2126 * $red + 0.7152 * $green + 0.0722 * $blue); 
+  // http://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html#contrast-ratiodef
+}
+
+/* the standard and text size see http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast 
+ * 
+ */
+@function contrast_tester($foreground, $background, $standard) {
+
+  // returned messages
+  $true: "Pass";
+  $false: "Fail";
+  $L1: luminance($foreground);
+  $L2: luminance($background);
+  
+  $contrast: if( $L1 > $L2, ($L1 + 0.05) / ($L2 + 0.05), ($L2 + 0.05) / ($L1 + 0.05));
+
+  // the standard and text size see http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast 
+  
+
+  @return if($contrast > $standard, $true, $false);
+}
+
+@debug contrast_tester(#fff, #776, 4.5); // example using the 1:4.5 ratio
